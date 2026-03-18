@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for the user." },
+        "displayName": { "type": "string", "description": "User's full name." },
+        "email": { "type": "string", "format": "email", "description": "User's email address." },
+        "photoURL": { "type": "string", "description": "URL to the user's profile picture." },
+        "role": { "type": "string", "enum": ["admin", "client"], "description": "User's role in the application." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user profile was created." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Appointment booking details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the booking." },
+        "userId": { "type": "string", "description": "The ID of the user who made the booking." },
+        "serviceId": { "type": "string", "description": "The ID of the selected service." },
+        "serviceName": { "type": "string", "description": "The name of the selected service." },
+        "price": { "type": "string", "description": "The price of the service." },
+        "date": { "type": "string", "format": "date", "description": "The date of the appointment." },
+        "time": { "type": "string", "description": "The time slot of the appointment." },
+        "customerName": { "type": "string", "description": "Full name of the customer." },
+        "customerEmail": { "type": "string", "format": "email", "description": "Email of the customer." },
+        "customerPhone": { "type": "string", "description": "Phone number of the customer." },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled"], "description": "Current status of the booking." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the booking was created." }
+      },
+      "required": ["userId", "serviceId", "date", "time", "customerName", "customerEmail", "customerPhone", "status"]
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "Messages sent via the contact form.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the message." },
+        "name": { "type": "string", "description": "Name of the sender." },
+        "email": { "type": "string", "format": "email", "description": "Email of the sender." },
+        "phone": { "type": "string", "description": "Phone number of the sender." },
+        "message": { "type": "string", "description": "The message content." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the message was sent." }
+      },
+      "required": ["name", "email", "message"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Collection of appointment bookings."
+    },
+    "/contact_messages/{messageId}": {
+      "schema": "ContactMessage",
+      "description": "Collection of contact form submissions."
+    }
+  }
+}

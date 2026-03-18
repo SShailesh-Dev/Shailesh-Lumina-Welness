@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: bookings
+    // Document ID: auto-generated
+    // Fields:
+    //   - serviceId: string (required)
+    //   - serviceName: string (required)
+    //   - price: string (required)
+    //   - date: string (required)
+    //   - time: string (required)
+    //   - customerName: string (required)
+    //   - customerEmail: string (required)
+    //   - customerPhone: string (required)
+    //   - status: string (required, enum: ['pending', 'confirmed', 'cancelled'])
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: contact_messages
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required)
+    //   - email: string (required, email format)
+    //   - phone: string (optional)
+    //   - message: string (required)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Bookings collection
+    match /bookings/{bookingId} {
+      function isValidBooking(data) {
+        return hasOnlyAllowedFields(['serviceId', 'serviceName', 'price', 'date', 'time', 'customerName', 'customerEmail', 'customerPhone', 'status', 'createdAt']) &&
+               data.serviceId is string &&
+               data.serviceName is string &&
+               data.price is string &&
+               data.date is string &&
+               data.time is string &&
+               data.customerName is string && data.customerName.size() > 0 && data.customerName.size() < 100 &&
+               isValidEmail(data.customerEmail) &&
+               data.customerPhone is string &&
+               data.status in ['pending', 'confirmed', 'cancelled'] &&
+               data.createdAt is timestamp;
+      }
+
+      // Allow anyone to create a booking
+      allow create: if isValidBooking(request.resource.data);
+      
+      // Deny all other access
+      allow read, update, delete: if false;
+    }
+
+    // Contact Messages collection
+    match /contact_messages/{messageId} {
+      function isValidMessage(data) {
+        return hasOnlyAllowedFields(['name', 'email', 'phone', 'message', 'createdAt']) &&
+               data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+               isValidEmail(data.email) &&
+               (data.phone == null || data.phone is string) &&
+               data.message is string && data.message.size() > 0 && data.message.size() < 2000 &&
+               data.createdAt is timestamp;
+      }
+
+      // Allow anyone to send a message
+      allow create: if isValidMessage(request.resource.data);
+      
+      // Deny all other access
+      allow read, update, delete: if false;
+    }
+
+    // Deny access to all other collections
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
